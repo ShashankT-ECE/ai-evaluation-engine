@@ -34,6 +34,24 @@ The pipeline runs **multiple submissions in sequence**, automatically classifies
 
 ---
 
+## Business Value & Financial Impact
+
+This pipeline is not an academic exercise — it is the kind of automated QA infrastructure that makes the difference between an AI feature that ships and one that stalls indefinitely in review.
+
+**Solving the AI Trust Bottleneck**
+Organisations routinely delay or abandon AI-powered features because they lack a repeatable, auditable process for verifying model behaviour before deployment. Without that process, every release carries undefined risk — and business stakeholders will not sign off on undefined risk. This pipeline provides the automated quality-assurance layer that converts model outputs from *untrusted artefacts* into *verified, policy-compliant code*, enabling teams to ship AI features with the same confidence they apply to human-authored code.
+
+**R&D Cost Reduction**
+Traditional AI QA relies on senior engineers manually reviewing model outputs run by run — a process that does not scale as model usage grows. By automating multi-run evaluation, adversarial constraint checking, and heuristic rubric scoring end-to-end, this engine eliminates the bottleneck. Engineering hours previously spent on repetitive manual review are reallocated to higher-leverage work, reducing the effective cost per evaluated submission by an order of magnitude.
+
+**Mitigating Financial and Security Risk**
+The adversarial constraint system — specifically the AST-level detection of forbidden module imports — demonstrates a concrete approach to preventing AI from introducing unauthorized dependencies or security vulnerabilities into a production codebase. An AI model that reaches for `time`, `subprocess`, or `os` when explicitly prohibited is a liability. Catching that at evaluation time, before the code reaches a repository, is the difference between a guardrail and a post-incident review.
+
+**Optimizing Compute Costs**
+LLM API calls are not free. Running a rubric grader against every submission regardless of quality wastes token budget on models that have already failed basic correctness checks. The Failure Categorization Dashboard addresses this directly: by classifying failures as **Rule Violations** or **Logic Errors** before invoking the LLM grader, the pipeline gates expensive heuristic scoring behind cheap deterministic tests. Teams get actionable signal — which failure class is most prevalent, and where to focus fine-tuning or prompt engineering effort — without burning budget on fundamentally incapable submissions.
+
+---
+
 ## The Adversarial Task
 
 **Task file:** `tasks/v1_adversarial_task.md`
@@ -120,6 +138,8 @@ After all runs complete, a **Rich terminal dashboard** renders the consolidated 
 
 Overall Pass Rate: 1/3  (33%)
 ```
+
+![AI Evaluation Dashboard](dashboard.jpg)
 
 ---
 
