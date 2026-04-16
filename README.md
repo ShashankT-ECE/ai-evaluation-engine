@@ -1,6 +1,6 @@
 # AI Evaluation Engine — Hybrid Grader & Adversarial Task
 
-A complete, end-to-end evaluation pipeline for frontier coding models. This repository demonstrates the full task lifecycle — prompt engineering, adversarial constraint design, deterministic procedural grading, and LLM-based heuristic scoring — in a single, runnable system.
+A complete, end-to-end evaluation pipeline for frontier coding models. This repository demonstrates the full task lifecycle — prompt engineering, adversarial constraint design, deterministic procedural grading, and LLM-based heuristic scoring — across **multi-run simulation with automatic failure categorization**.
 
 ---
 
@@ -13,7 +13,7 @@ This engine addresses all three failure modes simultaneously through a **hybrid 
 - A **procedural grader** enforces hard, binary constraints via AST analysis and deterministic test cases.
 - An **LLM heuristic grader** scores soft constraints — code quality, naming conventions, design principles — that no regex or unit test can reliably capture.
 
-The two scores are combined into a unified **Evaluation Report**, giving a complete picture of model capability across both correctness and craftsmanship dimensions.
+The pipeline runs **multiple submissions in sequence**, automatically classifies each failure as either a **Rule Violation** (forbidden import detected) or a **Logic Error** (incorrect boundary behaviour), and renders a consolidated Rich dashboard with per-run scores and an overall pass rate.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -97,11 +97,37 @@ The grader strips accidental markdown fences, validates the schema, and surfaces
 
 ---
 
+## Multi-Run Evaluation & Failure Categorization
+
+The pipeline evaluates a manifest of submissions in sequence, staging each one as `submissions/active_run.py` before grading and cleaning up afterward. Three synthetic submissions ship with the repo to demonstrate the three distinct outcome classes:
+
+| File | Expected outcome | Failure category |
+|---|---|---|
+| `run_1_trap.py` | Procedural FAIL | Rule Violation — illegal `import time` detected via AST |
+| `run_2_logic.py` | Procedural FAIL | Logic Error — off-by-one in eviction cutoff (`<` vs `<=`) |
+| `run_3_pass.py` | Procedural PASS | — (LLM rubric score reported) |
+
+After all runs complete, a **Rich terminal dashboard** renders the consolidated results:
+
+```
+╭──────────────────────┬──────────────┬──────────────────────┬────────────┬──────────────────────╮
+│ Run                  │ Procedural   │ Failure Category     │ LLM Score  │ LLM Reasoning        │
+├──────────────────────┼──────────────┼──────────────────────┼────────────┼──────────────────────┤
+│ run_1_trap.py        │    FAIL      │   Rule Violation     │  Skipped   │ Skipped              │
+│ run_2_logic.py       │    FAIL      │   Logic Error        │  Skipped   │ Skipped              │
+│ run_3_pass.py        │    PASS      │       —              │   8 / 10   │ Clean design…        │
+╰──────────────────────┴──────────────┴──────────────────────┴────────────┴──────────────────────╯
+
+Overall Pass Rate: 1/3  (33%)
+```
+
+---
+
 ## Repository Structure
 
 ```
 .
-├── evaluate_pipeline.py          # Orchestrator: runs both graders, prints report
+├── evaluate_pipeline.py          # Orchestrator: multi-run loop, Rich dashboard
 ├── requirements.txt
 ├── .env.example
 │
@@ -109,7 +135,10 @@ The grader strips accidental markdown fences, validates the schema, and surfaces
 │   └── v1_adversarial_task.md    # The prompt delivered to the model under test
 │
 ├── submissions/
-│   └── dummy_ai_submission.py    # Synthetic buggy submission for demonstration
+│   ├── run_1_trap.py             # Rule Violation: illegal import time
+│   ├── run_2_logic.py            # Logic Error: off-by-one eviction cutoff
+│   └── run_3_pass.py             # Passing: correct logic, clean code
+│   └── active_run.py             # Ephemeral — created and deleted per run
 │
 └── graders/
     ├── procedural_grader.py      # pytest suite: AST checks + boundary tests

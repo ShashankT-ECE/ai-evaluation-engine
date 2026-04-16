@@ -1,3 +1,4 @@
 pytest
 google-generativeai
 python-dotenv
+rich

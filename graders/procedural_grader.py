@@ -10,10 +10,10 @@ import pytest
 # Make the submissions package importable regardless of working directory
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from submissions.dummy_ai_submission import RateLimiter
+from submissions.active_run import RateLimiter
 
 SUBMISSION_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "submissions", "dummy_ai_submission.py"
+    os.path.dirname(__file__), "..", "submissions", "active_run.py"
 )
 
 
